@@ -18,8 +18,8 @@ import { SearchResultsPage } from './components/search/SearchResultsPage';
 import { StaticPageView } from './components/static/StaticPageView';
 import { LoginModal } from './components/auth/LoginModal';
 import { AdminDashboard } from './components/admin/AdminDashboard';
-import { GuruDashboard } from './components/contributor/GuruDashboard';
-import { Article, StaticPage } from './types';
+import { RedaksiDashboard } from './components/contributor/RedaksiDashboard';
+import { Article, StaticPage, User } from './types';
 
 type ActiveView =
   | 'home'
@@ -28,6 +28,7 @@ type ActiveView =
   | 'search'
   | 'static-page'
   | 'admin-dashboard'
+  | 'redaksi-dashboard'
   | 'guru-dashboard'
   | 'regional'
   | 'agenda'
@@ -88,8 +89,8 @@ function MainAppContent() {
   const handleGoToDashboard = () => {
     if (currentUser?.role === 'ADMIN') {
       setActiveView('admin-dashboard');
-    } else if (currentUser?.role === 'GURU') {
-      setActiveView('guru-dashboard');
+    } else if (currentUser) {
+      setActiveView('redaksi-dashboard');
     } else {
       setIsLoginModalOpen(true);
     }
@@ -106,12 +107,13 @@ function MainAppContent() {
     );
   }
 
-  // If in Guru / Contributor Dashboard view
-  if (activeView === 'guru-dashboard') {
+  // If in Redaksi / Contributor Dashboard view
+  if (activeView === 'redaksi-dashboard' || activeView === 'guru-dashboard') {
     return (
-      <GuruDashboard
+      <RedaksiDashboard
         onBackToPublic={handleNavigateHome}
         onPreviewArticle={handleSelectArticle}
+        onSwitchToAdmin={() => setActiveView('admin-dashboard')}
       />
     );
   }
@@ -226,6 +228,7 @@ function MainAppContent() {
             onBack={handleNavigateHome}
             onSelectArticle={handleSelectArticle}
             onSelectCategory={handleSelectCategory}
+            onKirimBerita={handleGoToDashboard}
           />
         )}
 
@@ -290,12 +293,12 @@ function MainAppContent() {
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
-        onLoginSuccess={() => {
-          // Redirect to appropriate dashboard
-          if (currentUser?.role === 'ADMIN') {
+        onLoginSuccess={(loggedInUser: User) => {
+          // Immediately route to the correct dashboard based on the logged-in user
+          if (loggedInUser.role === 'ADMIN') {
             setActiveView('admin-dashboard');
           } else {
-            setActiveView('guru-dashboard');
+            setActiveView('redaksi-dashboard');
           }
         }}
       />

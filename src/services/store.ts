@@ -7,6 +7,7 @@ import {
   AgendaItem,
   GalleryItem,
   User,
+  UserRole,
   ActivityLog,
   BreakingNewsItem,
   NewsletterSubscriber,
@@ -57,11 +58,22 @@ function saveStorage<T>(key: string, data: T) {
   }
 }
 
+function normalizeUser(u: User): User {
+  if (!u) return u;
+  return {
+    ...u,
+    role: (u.role === 'GURU' ? 'REDAKSI' : u.role) as UserRole,
+  };
+}
+
 export function usePortalStore() {
-  const [users, setUsers] = useState<User[]>(() => loadStorage(STORAGE_KEYS.USERS, INITIAL_USERS));
+  const [users, setUsers] = useState<User[]>(() => {
+    const loaded = loadStorage<User[]>(STORAGE_KEYS.USERS, INITIAL_USERS);
+    return (loaded || INITIAL_USERS).map(normalizeUser);
+  });
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     const saved = loadStorage<User | null>(STORAGE_KEYS.CURRENT_USER, null);
-    return saved; // null means guest/public visitor
+    return saved ? normalizeUser(saved) : null;
   });
   const [categories, setCategories] = useState<ArticleCategory[]>(() =>
     loadStorage(STORAGE_KEYS.CATEGORIES, INITIAL_CATEGORIES)
@@ -109,7 +121,7 @@ export function usePortalStore() {
       id: 'act-' + Date.now(),
       userId: currentUser?.id || 'guest',
       userName: currentUser?.name || 'Publik / Sistem',
-      userRole: currentUser?.role || 'GURU',
+      userRole: currentUser?.role || 'REDAKSI',
       action,
       details,
       timestamp: new Date().toISOString(),
@@ -118,17 +130,28 @@ export function usePortalStore() {
   };
 
   // Auth operations
-  const login = (email: string, role?: 'ADMIN' | 'GURU') => {
-    let matched = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  const login = (email: string, role?: 'ADMIN' | 'REDAKSI' | 'GURU'): User | null => {
+    const cleanEmail = email.trim().toLowerCase();
+    let matched = users.find((u) => u.email.toLowerCase() === cleanEmail);
     if (!matched && role) {
-      matched = users.find((u) => u.role === role);
+      if (role === 'REDAKSI' || role === 'GURU') {
+        matched = users.find((u) => u.role === 'REDAKSI' || u.role === 'GURU');
+      } else {
+        matched = users.find((u) => u.role === role);
+      }
+    }
+    // Fallback: If user specifies admin role or typing admin, match admin user
+    if (!matched && (cleanEmail.includes('admin') || role === 'ADMIN')) {
+      matched = users.find((u) => u.role === 'ADMIN');
     }
     if (matched) {
-      setCurrentUser(matched);
-      addLog('LOGIN', `Pengguna ${matched.name} (${matched.role}) berhasil masuk ke sistem.`);
-      return true;
+      const normalized = normalizeUser(matched);
+      setCurrentUser(normalized);
+      saveStorage(STORAGE_KEYS.CURRENT_USER, normalized);
+      addLog('LOGIN', `Pengguna ${normalized.name} (${normalized.role}) berhasil masuk ke sistem.`);
+      return normalized;
     }
-    return false;
+    return null;
   };
 
   const logout = () => {

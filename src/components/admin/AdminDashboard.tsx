@@ -27,9 +27,16 @@ import {
   Shield,
   Clock,
   Sparkles,
+  Menu,
+  Headphones,
+  ShieldCheck,
+  BarChart3,
+  Check,
 } from 'lucide-react';
 import { usePortal } from '../../context/PortalContext';
 import { Article, ArticleCategory, ArticleStatus, AgendaItem, GalleryItem, User } from '../../types';
+import { VoicePlayer } from '../common/VoicePlayer';
+import { ImageWithFallback } from '../common/ImageWithFallback';
 
 interface AdminDashboardProps {
   onBackToPublic: () => void;
@@ -74,6 +81,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   } = usePortal();
 
   const [activeTab, setActiveTab] = useState<string>('overview');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const selectTab = (tab: string) => {
+    setActiveTab(tab);
+    setIsMobileMenuOpen(false);
+  };
 
   // Article Form State
   const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
@@ -121,7 +134,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // New User State
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
-  const [newUserRole, setNewUserRole] = useState<'GURU' | 'ADMIN'>('GURU');
+  const [newUserRole, setNewUserRole] = useState<'REDAKSI' | 'ADMIN'>('REDAKSI');
   const [newUserBio, setNewUserBio] = useState('');
 
   // New Agenda State
@@ -311,12 +324,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         <div className="flex items-center gap-2.5">
+          {/* Mobile menu toggle */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-slate-800 text-slate-200 border border-slate-700"
+          >
+            <Menu className="w-3.5 h-3.5 text-red-500" />
+            <span>Pilih Menu (12)</span>
+          </button>
+
           <button
             onClick={onBackToPublic}
             className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors border border-slate-700"
           >
             <ExternalLink className="w-3.5 h-3.5" />
-            <span>Lihat Portal Publik</span>
+            <span>Portal Publik</span>
           </button>
           <button
             onClick={() => {
@@ -333,13 +355,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       <div className="flex-1 flex flex-col md:flex-row">
         {/* Sidebar Navigation */}
-        <aside className="w-full md:w-64 bg-white border-r border-slate-200 p-4 space-y-1 shrink-0 overflow-y-auto">
+        <aside className={`${isMobileMenuOpen ? 'block' : 'hidden'} md:block w-full md:w-64 bg-white border-r border-slate-200 p-4 space-y-1 shrink-0 overflow-y-auto max-h-[50vh] md:max-h-none`}>
           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 py-1">
             Menu Utama
           </div>
 
           <button
-            onClick={() => setActiveTab('overview')}
+            onClick={() => selectTab('overview')}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               activeTab === 'overview'
                 ? 'bg-slate-900 text-white shadow-2xs'
@@ -351,7 +373,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('articles')}
+            onClick={() => selectTab('articles')}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               activeTab === 'articles'
                 ? 'bg-slate-900 text-white shadow-2xs'
@@ -370,7 +392,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <button
             onClick={() => {
               handleResetArticleForm();
-              setActiveTab('add-article');
+              selectTab('add-article');
             }}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               activeTab === 'add-article'
@@ -383,7 +405,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('approvals')}
+            onClick={() => selectTab('approvals')}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               activeTab === 'approvals'
                 ? 'bg-slate-900 text-white shadow-2xs'
@@ -406,7 +428,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
 
           <button
-            onClick={() => setActiveTab('categories')}
+            onClick={() => selectTab('categories')}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               activeTab === 'categories'
                 ? 'bg-slate-900 text-white'
@@ -418,7 +440,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('ticker')}
+            onClick={() => selectTab('ticker')}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               activeTab === 'ticker'
                 ? 'bg-slate-900 text-white'
@@ -430,7 +452,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('gallery')}
+            onClick={() => selectTab('gallery')}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               activeTab === 'gallery'
                 ? 'bg-slate-900 text-white'
@@ -442,7 +464,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('agenda')}
+            onClick={() => selectTab('agenda')}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               activeTab === 'agenda'
                 ? 'bg-slate-900 text-white'
@@ -458,7 +480,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
 
           <button
-            onClick={() => setActiveTab('users')}
+            onClick={() => selectTab('users')}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               activeTab === 'users'
                 ? 'bg-slate-900 text-white'
@@ -470,7 +492,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('static-pages')}
+            onClick={() => selectTab('static-pages')}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               activeTab === 'static-pages'
                 ? 'bg-slate-900 text-white'
@@ -482,7 +504,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('settings')}
+            onClick={() => selectTab('settings')}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               activeTab === 'settings'
                 ? 'bg-slate-900 text-white'
@@ -494,7 +516,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('logs')}
+            onClick={() => selectTab('logs')}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               activeTab === 'logs'
                 ? 'bg-slate-900 text-white'
@@ -784,270 +806,476 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
 
           {/* TAB 3: TAMBAH / SUNTING BERITA */}
-          {activeTab === 'add-article' && (
-            <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-200">
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-serif font-bold text-slate-900">
-                    {editingArticleId ? 'Sunting Artikel' : 'Tulis Berita Baru'}
-                  </h1>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Lengkapi struktur data jurnalistik lengkap sesuai pedoman redaksi WARTA HUKUM.
-                  </p>
+          {activeTab === 'add-article' && (() => {
+            const selectedCat = categories.find((c) => c.id === artCategory) || categories[0];
+            const wordCount = artContent ? artContent.trim().split(/\s+/).filter(Boolean).length : 0;
+            const charCount = artContent ? artContent.length : 0;
+            const readTimeEst = Math.max(1, Math.ceil(wordCount / 180));
+            const completenessScore = Math.min(
+              100,
+              (artTitle.trim().length >= 10 ? 25 : 0) +
+                (artSummary.trim().length >= 20 ? 25 : 0) +
+                (artContent.trim().length >= 50 ? 25 : 0) +
+                (artCover.trim().length >= 5 ? 15 : 0) +
+                (artTags.trim().length >= 2 ? 10 : 0)
+            );
+
+            return (
+              <div className="space-y-6 max-w-7xl mx-auto animate-in fade-in">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
+                  <div>
+                    <h1 className="text-xl sm:text-2xl font-serif font-bold text-slate-900">
+                      {editingArticleId ? 'Sunting Artikel Berita' : 'Tulis Berita Baru'}
+                    </h1>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Lengkapi naskah liputan sesuai pedoman redaksi WARTA HUKUM dan kode etik jurnalistik.
+                    </p>
+                  </div>
+                  {editingArticleId && (
+                    <button
+                      onClick={handleResetArticleForm}
+                      className="text-xs text-slate-600 hover:text-slate-900 font-semibold px-3 py-1.5 rounded-lg border border-slate-300 bg-white"
+                    >
+                      Batal Edit (Buat Baru)
+                    </button>
+                  )}
                 </div>
-                {editingArticleId && (
-                  <button
-                    onClick={handleResetArticleForm}
-                    className="text-xs text-slate-500 hover:text-slate-800 underline"
-                  >
-                    Batal Edit (Buat Baru)
-                  </button>
+
+                {formSuccess && (
+                  <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>{formSuccess}</span>
+                  </div>
                 )}
+
+                <form onSubmit={handleSaveArticle}>
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    {/* LEFT / MAIN COLUMN: Editor Form (8 cols) */}
+                    <div className="lg:col-span-7 xl:col-span-8 space-y-5 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs">
+                      {/* Title */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1">
+                          Judul Berita (Headline) *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={artTitle}
+                          onChange={(e) => setArtTitle(e.target.value)}
+                          placeholder="Contoh: Majelis Hakim Vonis Terdakwa Perkara Tipikor..."
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-serif font-bold focus:outline-none focus:ring-2 focus:ring-red-500"
+                        />
+                      </div>
+
+                      {/* Summary / Lead */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1">
+                          Ringkasan Berita (Lead Paragraf 5W+1H) *
+                        </label>
+                        <textarea
+                          rows={3}
+                          required
+                          value={artSummary}
+                          onChange={(e) => setArtSummary(e.target.value)}
+                          placeholder="Tuliskan 2-3 kalimat ringkasan inti peristiwa fakta hukum (5W+1H)..."
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-red-500"
+                        />
+                      </div>
+
+                      {/* Category & Status */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-800 mb-1">
+                            Kanal Kategori *
+                          </label>
+                          <select
+                            value={artCategory}
+                            onChange={(e) => setArtCategory(e.target.value)}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500"
+                          >
+                            {categories.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-800 mb-1">
+                            Status Publikasi *
+                          </label>
+                          <select
+                            value={artStatus}
+                            onChange={(e) => setArtStatus(e.target.value as ArticleStatus)}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500"
+                          >
+                            <option value="published">Terbit Langsung (Tampil di Publik)</option>
+                            <option value="draft">Simpan sebagai Draf</option>
+                            <option value="submitted">Ajukan ke Meja Redaksi</option>
+                            <option value="needs_revision">Perlu Revisi</option>
+                            <option value="archived">Arsipkan</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Location (Province & City for Regional News) */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-800 mb-1">
+                            Provinsi (Opsional untuk Berita Nusantara)
+                          </label>
+                          <input
+                            type="text"
+                            value={artProvince}
+                            onChange={(e) => setArtProvince(e.target.value)}
+                            placeholder="Contoh: Jawa Barat, DKI Jakarta, Jawa Timur..."
+                            className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-800 mb-1">
+                            Kabupaten / Kota
+                          </label>
+                          <input
+                            type="text"
+                            value={artCity}
+                            onChange={(e) => setArtCity(e.target.value)}
+                            placeholder="Contoh: Bandung, Surabaya, Medan..."
+                            className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Cover Image, Caption, and Photo Credit */}
+                      <div className="space-y-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-800 mb-1">
+                            Tautan URL Foto Sampul (Cover Image) *
+                          </label>
+                          <input
+                            type="url"
+                            value={artCover}
+                            onChange={(e) => setArtCover(e.target.value)}
+                            placeholder="https://images.unsplash.com/... atau URL foto terverifikasi"
+                            className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-bold text-slate-800 mb-1">
+                              Keterangan Foto (Caption)
+                            </label>
+                            <input
+                              type="text"
+                              value={artCaption}
+                              onChange={(e) => setArtCaption(e.target.value)}
+                              placeholder="Contoh: Suasana ruang sidang pleno..."
+                              className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-800 mb-1">
+                              Kredit Fotografer / Sumber
+                            </label>
+                            <input
+                              type="text"
+                              value={artCredit}
+                              onChange={(e) => setArtCredit(e.target.value)}
+                              placeholder="Contoh: Dok. Puspenkum Kejagung / Warta Hukum"
+                              className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Article Full Body */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1">
+                          Isi Artikel Lengkap * (Mendukung paragraf HTML)
+                        </label>
+                        <textarea
+                          rows={11}
+                          required
+                          value={artContent}
+                          onChange={(e) => setArtContent(e.target.value)}
+                          placeholder="Tuliskan naskah berita lengkap di sini..."
+                          className="w-full px-3.5 py-3 rounded-xl border border-slate-200 text-xs sm:text-sm font-sans focus:outline-none focus:ring-2 focus:ring-red-500 font-mono"
+                        />
+                      </div>
+
+                      {/* Tags */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1">
+                          Tag Berita (Pisahkan dengan koma)
+                        </label>
+                        <input
+                          type="text"
+                          value={artTags}
+                          onChange={(e) => setArtTags(e.target.value)}
+                          placeholder="Mahkamah Agung, Tipikor, Restorative Justice, Kejagung"
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-red-500"
+                        />
+                      </div>
+
+                      {/* Flags / Checkboxes */}
+                      <div className="flex flex-wrap items-center gap-5 pt-2">
+                        <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={artIsFeatured}
+                            onChange={(e) => setArtIsFeatured(e.target.checked)}
+                            className="rounded text-red-600 focus:ring-red-500"
+                          />
+                          <span>Berita Unggulan (Featured)</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={artIsBreaking}
+                            onChange={(e) => setArtIsBreaking(e.target.checked)}
+                            className="rounded text-red-600 focus:ring-red-500"
+                          />
+                          <span>Breaking News</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={artIsOpinion}
+                            onChange={(e) => setArtIsOpinion(e.target.checked)}
+                            className="rounded text-amber-600 focus:ring-amber-500"
+                          />
+                          <span>Kolom Opini / Analisis Pakar</span>
+                        </label>
+                      </div>
+
+                      {artIsOpinion && (
+                        <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
+                          <label className="block text-xs font-bold text-amber-900 mb-1">
+                            Biografi Singkat Penulis Opini
+                          </label>
+                          <input
+                            type="text"
+                            value={artOpinionBio}
+                            onChange={(e) => setArtOpinionBio(e.target.value)}
+                            placeholder="Contoh: Pakar Hukum Pidana Universitas Indonesia"
+                            className="w-full px-3 py-2 rounded-lg border border-amber-300 text-xs bg-white"
+                          />
+                        </div>
+                      )}
+
+                      {/* Submit Actions inside left form for mobile convenience */}
+                      <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
+                        <button
+                          type="button"
+                          onClick={handleResetArticleForm}
+                          className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-colors"
+                        >
+                          {editingArticleId ? 'Perbarui Berita' : 'Terbitkan Berita'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* RIGHT COLUMN: Right-hand cards (Pratinjau Card, Voice Play, Kualitas) */}
+                    <div className="lg:col-span-5 xl:col-span-4 space-y-5 lg:sticky lg:top-20">
+                      {/* CARD 1: LIVE CARD PREVIEW BERITA */}
+                      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+                        <div className="px-4 py-3 bg-slate-900 text-white flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Eye className="w-3.5 h-3.5 text-red-400" />
+                            <span className="text-xs font-bold uppercase tracking-wider">
+                              Pratinjau Kartu Berita
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-mono text-slate-300 bg-slate-800 px-2 py-0.5 rounded">
+                            Live Preview
+                          </span>
+                        </div>
+
+                        {/* Card Image */}
+                        <div className="relative aspect-[16/10] bg-slate-100 overflow-hidden">
+                          <ImageWithFallback
+                            src={artCover}
+                            alt={artTitle || 'Pratinjau'}
+                            fallbackCategory={selectedCat?.name || 'Hukum'}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-red-600 text-white shadow-xs">
+                              {selectedCat?.name || 'Kanal Berita'}
+                            </span>
+                            {artIsBreaking && (
+                              <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-500 text-slate-950 shadow-xs animate-pulse">
+                                BREAKING
+                              </span>
+                            )}
+                            {artIsOpinion && (
+                              <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-purple-600 text-white shadow-xs">
+                                OPINI
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Card Content Body */}
+                        <div className="p-4 space-y-2.5">
+                          <h3 className="font-serif font-bold text-sm text-slate-900 leading-snug line-clamp-2">
+                            {artTitle.trim() || 'Judul naskah berita akan langsung tertampil di sini secara dinamis...'}
+                          </h3>
+
+                          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                            {artSummary.trim() || 'Lead berita 5W+1H akan muncul di bagian ringkasan kartu pembaca...'}
+                          </p>
+
+                          {/* Quick Voice Play button on card */}
+                          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                            <VoicePlayer
+                              title={artTitle}
+                              textToRead={`${artSummary}. ${artContent}`}
+                              variant="compact"
+                            />
+                            <div className="text-[11px] text-slate-400 flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-slate-400" />
+                              <span>{readTimeEst} mnt baca</span>
+                            </div>
+                          </div>
+
+                          {/* Author & Status Byline */}
+                          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                            <span className="font-semibold text-slate-700 truncate max-w-[150px]">
+                              {currentUser?.name || 'Redaksi Warta Hukum'}
+                            </span>
+                            <span className="text-[10px] font-mono uppercase bg-slate-100 px-2 py-0.5 rounded text-slate-600">
+                              {artStatus}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* CARD 2: VOICE PLAY NARATOR (Audio Playback) */}
+                      <VoicePlayer
+                        title={artTitle}
+                        textToRead={`${artSummary}. ${artContent}`}
+                        variant="card-side"
+                        authorName={currentUser?.name}
+                      />
+
+                      {/* CARD 3: PUBLIKASI CEPAT */}
+                      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs space-y-3">
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                          <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                            <span>Tindakan Publikasi</span>
+                          </h4>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700">
+                            {artStatus.toUpperCase()}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          <button
+                            type="submit"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition-all"
+                          >
+                            <Check className="w-4 h-4 text-emerald-400" />
+                            <span>{editingArticleId ? 'Perbarui Naskah' : 'Terbitkan Berita'}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setArtStatus('draft');
+                              setTimeout(() => {
+                                const form = document.querySelector('form');
+                                if (form) form.requestSubmit();
+                              }, 50);
+                            }}
+                            className="w-full py-2 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors"
+                          >
+                            Simpan Sebagai Draf
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* CARD 4: STATISTIK & KUALITAS NASKAH */}
+                      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs space-y-3">
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                          <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                            <BarChart3 className="w-3.5 h-3.5 text-blue-600" />
+                            <span>Statistik & Kelengkapan</span>
+                          </h4>
+                          <span className="text-xs font-bold font-mono text-emerald-600">
+                            {completenessScore}%
+                          </span>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                          <div
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              completenessScore >= 80
+                                ? 'bg-emerald-500'
+                                : completenessScore >= 50
+                                ? 'bg-amber-500'
+                                : 'bg-red-500'
+                            }`}
+                            style={{ width: `${completenessScore}%` }}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+                          <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                            <span className="text-[10px] text-slate-400 block">Jumlah Kata</span>
+                            <span className="text-xs font-bold font-mono text-slate-800">{wordCount}</span>
+                          </div>
+                          <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                            <span className="text-[10px] text-slate-400 block">Karakter</span>
+                            <span className="text-xs font-bold font-mono text-slate-800">{charCount}</span>
+                          </div>
+                          <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                            <span className="text-[10px] text-slate-400 block">Waktu Baca</span>
+                            <span className="text-xs font-bold font-mono text-slate-800">~{readTimeEst} mnt</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* CARD 5: STANDAR REDAKSI & KODE ETIK */}
+                      <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 text-xs space-y-2">
+                        <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                          <span>Standar Redaksi Warta Hukum</span>
+                        </div>
+                        <ul className="text-[11px] text-slate-600 space-y-1.5 pl-1 leading-relaxed">
+                          <li className="flex items-start gap-1.5">
+                            <span className="text-emerald-600 font-bold">✓</span>
+                            <span>Memenuhi unsur 5W+1H yang berimbang dan faktual.</span>
+                          </li>
+                          <li className="flex items-start gap-1.5">
+                            <span className="text-emerald-600 font-bold">✓</span>
+                            <span>Menjunjung asas praduga tak bersalah dalam perkara hukum.</span>
+                          </li>
+                          <li className="flex items-start gap-1.5">
+                            <span className="text-emerald-600 font-bold">✓</span>
+                            <span>Mencantumkan sumber resmi & hak jawab bagi pihak terkait.</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </form>
               </div>
-
-              {formSuccess && (
-                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>{formSuccess}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleSaveArticle} className="space-y-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
-                {/* Title */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Judul Berita *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={artTitle}
-                    onChange={(e) => setArtTitle(e.target.value)}
-                    placeholder="Contoh: Majelis Hakim Vonis Terdakwa Perkara Korupsi..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-serif font-bold focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
-                </div>
-
-                {/* Summary / Lead */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Ringkasan Berita (Lead) *
-                  </label>
-                  <textarea
-                    rows={3}
-                    required
-                    value={artSummary}
-                    onChange={(e) => setArtSummary(e.target.value)}
-                    placeholder="Tuliskan 2-3 kalimat ringkasan inti peristiwa (5W+1H)..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
-                </div>
-
-                {/* Category & Status */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1">
-                      Kanal Kategori *
-                    </label>
-                    <select
-                      value={artCategory}
-                      onChange={(e) => setArtCategory(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500"
-                    >
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1">
-                      Status Publikasi *
-                    </label>
-                    <select
-                      value={artStatus}
-                      onChange={(e) => setArtStatus(e.target.value as ArticleStatus)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500"
-                    >
-                      <option value="published">Terbit (Tampil di Publik)</option>
-                      <option value="draft">Simpan sebagai Draf</option>
-                      <option value="submitted">Ajukan ke Redaksi</option>
-                      <option value="needs_revision">Perlu Revisi</option>
-                      <option value="archived">Arsipkan</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Location (Province & City for Regional News) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1">
-                      Provinsi (Opsional untuk Berita Daerah)
-                    </label>
-                    <input
-                      type="text"
-                      value={artProvince}
-                      onChange={(e) => setArtProvince(e.target.value)}
-                      placeholder="Contoh: Jawa Barat, DKI Jakarta, Jawa Timur..."
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1">
-                      Kabupaten / Kota
-                    </label>
-                    <input
-                      type="text"
-                      value={artCity}
-                      onChange={(e) => setArtCity(e.target.value)}
-                      placeholder="Contoh: Bandung, Surabaya, Medan..."
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
-                    />
-                  </div>
-                </div>
-
-                {/* Cover Image, Caption, and Photo Credit */}
-                <div className="space-y-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1">
-                      Tautan URL Foto Sampul *
-                    </label>
-                    <input
-                      type="url"
-                      value={artCover}
-                      onChange={(e) => setArtCover(e.target.value)}
-                      placeholder="https://images.unsplash.com/..."
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-1">
-                        Keterangan Foto (Caption)
-                      </label>
-                      <input
-                        type="text"
-                        value={artCaption}
-                        onChange={(e) => setArtCaption(e.target.value)}
-                        placeholder="Contoh: Suasana ruang sidang pleno Mahkamah Agung..."
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-1">
-                        Kredit Fotografer / Sumber
-                      </label>
-                      <input
-                        type="text"
-                        value={artCredit}
-                        onChange={(e) => setArtCredit(e.target.value)}
-                        placeholder="Contoh: Dokumentasi Puspenkum Kejagung / Warta Hukum"
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Article Full Body (HTML-supported) */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Isi Artikel Lengkap * (Mendukung paragraf HTML)
-                  </label>
-                  <textarea
-                    rows={12}
-                    required
-                    value={artContent}
-                    onChange={(e) => setArtContent(e.target.value)}
-                    placeholder="Tuliskan naskah berita lengkap di sini..."
-                    className="w-full px-3.5 py-3 rounded-xl border border-slate-200 text-xs sm:text-sm font-sans focus:outline-none focus:ring-2 focus:ring-red-500 font-mono"
-                  />
-                </div>
-
-                {/* Tags */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Tag Berita (Pisahkan dengan koma)
-                  </label>
-                  <input
-                    type="text"
-                    value={artTags}
-                    onChange={(e) => setArtTags(e.target.value)}
-                    placeholder="Mahkamah Agung, Tipikor, Restorative Justice, Kejagung"
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
-                </div>
-
-                {/* Flags / Checkboxes */}
-                <div className="flex flex-wrap items-center gap-6 pt-2">
-                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={artIsFeatured}
-                      onChange={(e) => setArtIsFeatured(e.target.checked)}
-                      className="rounded text-red-600 focus:ring-red-500"
-                    />
-                    <span>Tampilkan sebagai Berita Unggulan (Featured)</span>
-                  </label>
-
-                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={artIsBreaking}
-                      onChange={(e) => setArtIsBreaking(e.target.checked)}
-                      className="rounded text-red-600 focus:ring-red-500"
-                    />
-                    <span>Tandai sebagai Breaking News</span>
-                  </label>
-
-                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={artIsOpinion}
-                      onChange={(e) => setArtIsOpinion(e.target.checked)}
-                      className="rounded text-amber-600 focus:ring-amber-500"
-                    />
-                    <span>Naskah Opini / Analisis Pakar</span>
-                  </label>
-                </div>
-
-                {artIsOpinion && (
-                  <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
-                    <label className="block text-xs font-bold text-amber-900 mb-1">
-                      Biografi Singkat Penulis Opini
-                    </label>
-                    <input
-                      type="text"
-                      value={artOpinionBio}
-                      onChange={(e) => setArtOpinionBio(e.target.value)}
-                      placeholder="Contoh: Dosen Hukum Pidana Universitas Indonesia"
-                      className="w-full px-3 py-2 rounded-lg border border-amber-300 text-xs bg-white"
-                    />
-                  </div>
-                )}
-
-                {/* Submit Buttons */}
-                <div className="pt-4 border-t border-slate-200 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={handleResetArticleForm}
-                    className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-100"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-colors"
-                  >
-                    {editingArticleId ? 'Perbarui Artikel' : 'Terbitkan / Simpan'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
+            );
+          })()}
 
           {/* TAB 4: PERSETUJUAN ARTIKEL (APPROVAL WORKFLOW) */}
           {activeTab === 'approvals' && (
@@ -1057,7 +1285,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   Persetujuan & Kurasi Redaksi (Editorial Approval)
                 </h1>
                 <p className="text-xs text-slate-500 mt-1">
-                  Verifikasi akurasi fakta, sumber rujukan, dan kelayakan hukum artikel yang diajukan oleh kontributor atau guru.
+                  Verifikasi akurasi fakta, sumber rujukan, dan kelayakan hukum artikel yang diajukan oleh wartawan dan tim redaksi.
                 </p>
               </div>
 
@@ -1523,22 +1751,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* TAB 9: MANAJEMEN PENGGUNA (USERS & GURU / KONTRIBUTOR) */}
+          {/* TAB 9: MANAJEMEN PENGGUNA (USERS & TIM REDAKSI) */}
           {activeTab === 'users' && (
             <div className="space-y-6 animate-in fade-in">
               <div>
                 <h1 className="text-xl sm:text-2xl font-serif font-bold text-slate-900">
-                  Manajemen Pengguna & Akun Guru (Kontributor)
+                  Manajemen Pengguna & Tim Redaksi
                 </h1>
                 <p className="text-xs text-slate-500 mt-1">
-                  Kelola akun wartawan, guru/kontributor berita, dan hak akses sistem editorial.
+                  Kelola akun wartawan, staf redaksi, dan hak akses penuh administrator portal WARTA HUKUM.
                 </p>
               </div>
 
               {/* Add User Form */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Buat Akun Kontributor Baru
+                  Buat Akun Tim Redaksi Baru
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <input
@@ -1560,7 +1788,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     onChange={(e) => setNewUserRole(e.target.value as any)}
                     className="px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white"
                   >
-                    <option value="GURU">Guru (Kontributor Berita)</option>
+                    <option value="REDAKSI">Redaksi (Wartawan / Jurnalis)</option>
                     <option value="ADMIN">Admin (Akses Penuh)</option>
                   </select>
                 </div>
@@ -1572,7 +1800,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       email: newUserEmail,
                       role: newUserRole,
                       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-                      bio: newUserBio || 'Kontributor Berita Hukum',
+                      bio: newUserBio || 'Wartawan Liputan Berita Hukum',
                       active: true,
                     });
                     setNewUserName('');
@@ -1605,10 +1833,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <td className="py-3 px-4">
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              u.role === 'ADMIN' ? 'bg-red-100 text-red-700' : 'bg-indigo-100 text-indigo-700'
+                              u.role === 'ADMIN' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
                             }`}
                           >
-                            {u.role === 'ADMIN' ? 'Admin' : 'Guru (Kontributor)'}
+                            {u.role === 'ADMIN' ? 'Admin (Akses Penuh)' : 'Wartawan / Redaksi'}
                           </span>
                         </td>
                         <td className="py-3 px-4">

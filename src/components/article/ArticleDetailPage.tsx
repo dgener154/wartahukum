@@ -14,9 +14,15 @@ import {
   ChevronRight,
   ShieldAlert,
   MessageCircle,
+  MessageSquare,
+  ArrowDown,
+  ArrowRight,
+  Newspaper,
+  Send,
 } from 'lucide-react';
 import { Article } from '../../types';
 import { ImageWithFallback } from '../common/ImageWithFallback';
+import { VoicePlayer } from '../common/VoicePlayer';
 import { usePortal } from '../../context/PortalContext';
 
 interface ArticleDetailPageProps {
@@ -24,17 +30,60 @@ interface ArticleDetailPageProps {
   onBack: () => void;
   onSelectArticle: (article: Article) => void;
   onSelectCategory: (categoryId: string) => void;
+  onKirimBerita?: () => void;
 }
+
+interface ReaderComment {
+  id: string;
+  name: string;
+  content: string;
+  timeAgo: string;
+}
+
+const defaultComments: ReaderComment[] = [
+  {
+    id: 'c1',
+    name: 'Nurfajriana',
+    content: 'Sangat baik',
+    timeAgo: '3 hari yang lalu',
+  },
+  {
+    id: 'c2',
+    name: 'Saskia Wandira',
+    content: 'Program yang bagus',
+    timeAgo: '3 hari yang lalu',
+  },
+  {
+    id: 'c3',
+    name: 'Siti Huzaifah',
+    content: 'Sangat seruu',
+    timeAgo: '3 hari yang lalu',
+  },
+];
 
 export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({
   article,
   onBack,
   onSelectArticle,
   onSelectCategory,
+  onKirimBerita,
 }) => {
   const { articles, incrementArticleViews } = usePortal();
   const [fontSizeClass, setFontSizeClass] = useState<'text-sm' | 'text-base' | 'text-lg' | 'text-xl'>('text-base');
   const [copied, setCopied] = useState(false);
+  const [comments, setComments] = useState<ReaderComment[]>(() => {
+    try {
+      const saved = localStorage.getItem(`comments_${article.id}`);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // fallback
+    }
+    return defaultComments;
+  });
+  const [showCommentForm, setShowCommentForm] = useState(false);
+  const [newCommentAuthor, setNewCommentAuthor] = useState('');
+  const [newCommentText, setNewCommentText] = useState('');
+  const [commentSuccess, setCommentSuccess] = useState(false);
 
   // Increment views count on visit
   useEffect(() => {
@@ -87,6 +136,57 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({
   const latestSidebar = articles
     .filter((a) => a.id !== article.id && a.status === 'published')
     .slice(0, 4);
+
+  const handleAddComment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCommentAuthor.trim() || !newCommentText.trim()) return;
+
+    const newCommentItem: ReaderComment = {
+      id: `comment-${Date.now()}`,
+      name: newCommentAuthor.trim(),
+      content: newCommentText.trim(),
+      timeAgo: 'Baru saja',
+    };
+
+    const updated = [newCommentItem, ...comments];
+    setComments(updated);
+    try {
+      localStorage.setItem(`comments_${article.id}`, JSON.stringify(updated));
+    } catch {
+      // fallback
+    }
+
+    setNewCommentAuthor('');
+    setNewCommentText('');
+    setCommentSuccess(true);
+    setTimeout(() => {
+      setCommentSuccess(false);
+      setShowCommentForm(false);
+    }, 1200);
+  };
+
+  const formatDateSummary = (dateString?: string | null) => {
+    if (!dateString) return '07 Okt 2026';
+    try {
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return '07 Okt 2026';
+      return new Intl.DateTimeFormat('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      }).format(d);
+    } catch {
+      return '07 Okt 2026';
+    }
+  };
+
+  const calculateReadingTime = () => {
+    if (article.readTimeMinutes) return `${article.readTimeMinutes} menit`;
+    const plainText = (article.summary || '') + ' ' + (article.content || '').replace(/<[^>]*>/g, ' ');
+    const words = plainText.trim().split(/\s+/).filter(Boolean).length;
+    const minutes = Math.max(1, Math.ceil(words / 180));
+    return `${minutes} menit`;
+  };
 
   return (
     <article className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in duration-300">
@@ -149,9 +249,9 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-slate-900">Penulis:</span>
                 <span className="text-slate-800">{article.authorName}</span>
-                {article.authorRole === 'GURU' && (
-                  <span className="text-[10px] bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200 text-slate-600">
-                    Kontributor
+                {(article.authorRole === 'REDAKSI' || article.authorRole === 'GURU') && (
+                  <span className="text-[10px] bg-blue-50 px-2 py-0.5 rounded border border-blue-200 text-blue-700 font-medium">
+                    Wartawan Redaksi
                   </span>
                 )}
               </div>
@@ -197,32 +297,45 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({
             )}
           </div>
 
-          {/* Reading Accessibility Bar (Font Size Adjuster & Share) */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-100 border border-slate-200 mb-6">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-600 flex items-center gap-1">
-                <Type className="w-3.5 h-3.5" />
-                <span>Ukuran Teks:</span>
-              </span>
-              <div className="flex items-center gap-1 bg-white rounded-lg p-0.5 border border-slate-200 text-xs">
-                <button
-                  onClick={() => setFontSizeClass('text-sm')}
-                  className={`px-2 py-0.5 rounded ${fontSizeClass === 'text-sm' ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'}`}
-                >
-                  A-
-                </button>
-                <button
-                  onClick={() => setFontSizeClass('text-base')}
-                  className={`px-2 py-0.5 rounded ${fontSizeClass === 'text-base' ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'}`}
-                >
-                  A
-                </button>
-                <button
-                  onClick={() => setFontSizeClass('text-lg')}
-                  className={`px-2 py-0.5 rounded ${fontSizeClass === 'text-lg' ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'}`}
-                >
-                  A+
-                </button>
+          {/* Reading Accessibility Bar (Voice Play Naskah, Font Size Adjuster & Share) */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-slate-100 border border-slate-200 mb-6">
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Play Naskah: Hanya Tombol Play Saja */}
+              <div className="flex items-center gap-1.5 pr-3 border-r border-slate-300">
+                <VoicePlayer
+                  title={article.title}
+                  textToRead={`${article.summary || ''}. ${article.content || ''}`}
+                  authorName={article.authorName}
+                  variant="button-only"
+                />
+              </div>
+
+              {/* Ukuran Teks */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-600 flex items-center gap-1">
+                  <Type className="w-3.5 h-3.5" />
+                  <span>Ukuran Teks:</span>
+                </span>
+                <div className="flex items-center gap-1 bg-white rounded-lg p-0.5 border border-slate-200 text-xs">
+                  <button
+                    onClick={() => setFontSizeClass('text-sm')}
+                    className={`px-2 py-0.5 rounded font-medium ${fontSizeClass === 'text-sm' ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'}`}
+                  >
+                    A-
+                  </button>
+                  <button
+                    onClick={() => setFontSizeClass('text-base')}
+                    className={`px-2 py-0.5 rounded font-medium ${fontSizeClass === 'text-base' ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'}`}
+                  >
+                    A
+                  </button>
+                  <button
+                    onClick={() => setFontSizeClass('text-lg')}
+                    className={`px-2 py-0.5 rounded font-medium ${fontSizeClass === 'text-lg' ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'}`}
+                  >
+                    A+
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -366,6 +479,157 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* CARD 1: KOMENTAR TERBARU (Ikut obrolan pembaca) */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className="text-[11px] font-bold tracking-wider text-[#1b8055] uppercase block">
+                  KOMENTAR TERBARU
+                </span>
+                <h3 className="font-bold text-base sm:text-lg text-slate-900 mt-1">
+                  Ikut obrolan pembaca
+                </h3>
+              </div>
+              <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+                <MessageSquare className="w-5 h-5 stroke-[2.2]" />
+              </div>
+            </div>
+
+            {/* Daftar Komentar */}
+            <div className="space-y-2.5">
+              {comments.map((c) => (
+                <div
+                  key={c.id}
+                  className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-1 transition-colors hover:bg-slate-100/70"
+                >
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900 leading-none">
+                    {c.name}
+                  </h4>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-1">
+                    {c.content}
+                  </p>
+                  <p className="text-[11px] text-slate-400 font-sans mt-0.5">
+                    {c.timeAgo}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Form Tulis Komentar atau Tombol */}
+            {showCommentForm ? (
+              <form onSubmit={handleAddComment} className="pt-2 border-t border-slate-100 space-y-2.5 animate-in fade-in">
+                {commentSuccess && (
+                  <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-1.5">
+                    <Check className="w-4 h-4 text-emerald-600" />
+                    <span>Komentar Anda berhasil dikirim!</span>
+                  </div>
+                )}
+                <input
+                  type="text"
+                  placeholder="Nama Anda"
+                  value={newCommentAuthor}
+                  onChange={(e) => setNewCommentAuthor(e.target.value)}
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                  required
+                />
+                <textarea
+                  rows={2}
+                  placeholder="Tulis tanggapan atau komentar Anda..."
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white resize-none"
+                  required
+                />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="submit"
+                    className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Kirim Komentar</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCommentForm(false)}
+                    className="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold"
+                  >
+                    Batal
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowCommentForm(true)}
+                className="w-full py-2.5 px-4 rounded-xl border border-emerald-300/80 bg-emerald-50/60 hover:bg-emerald-100/70 text-emerald-800 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all active:scale-[0.99] shadow-xs"
+              >
+                <span>Tulis komentar</span>
+                <ArrowDown className="w-4 h-4 text-emerald-700" />
+              </button>
+            )}
+          </div>
+
+          {/* CARD 2: RINGKASAN */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3.5">
+            <span className="text-[11px] font-bold tracking-wider text-[#1b8055] uppercase block">
+              RINGKASAN
+            </span>
+
+            <div className="space-y-3 text-xs sm:text-sm">
+              <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+                <span className="text-slate-500">Tanggal</span>
+                <span className="font-bold text-slate-900">
+                  {formatDateSummary(article.publishedAt)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+                <span className="text-slate-500">Kategori</span>
+                <span className="font-bold text-slate-900 text-right">
+                  {article.categoryName || 'Pendidikan Madrasah'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Durasi baca</span>
+                <span className="font-bold text-slate-900">
+                  {calculateReadingTime()}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* CARD 3: PUBLIKASI */}
+          <div className="rounded-2xl overflow-hidden shadow-xs border border-slate-200/90">
+            {/* Top header dark box */}
+            <div className="bg-[#040915] text-white p-5 flex items-center justify-between gap-3">
+              <div>
+                <span className="text-[11px] font-bold tracking-wider text-emerald-400 uppercase block">
+                  PUBLIKASI
+                </span>
+                <h3 className="font-bold text-base sm:text-lg text-white mt-1 leading-snug max-w-[210px]">
+                  Kirim bahan berita kegiatan Anda
+                </h3>
+              </div>
+              <div className="w-11 h-11 rounded-xl bg-emerald-400 text-slate-950 flex items-center justify-center shrink-0 shadow-sm">
+                <Newspaper className="w-5 h-5 stroke-[2.2]" />
+              </div>
+            </div>
+
+            {/* Bottom white box */}
+            <div className="bg-white p-5 space-y-4">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Pegawai dan unit kerja dapat mengirim bahan kegiatan untuk diproses menjadi publikasi resmi Tim Humas.
+              </p>
+              <button
+                type="button"
+                onClick={onKirimBerita || onBack}
+                className="w-full py-3 px-4 rounded-xl bg-[#006644] hover:bg-[#005237] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors active:scale-[0.99]"
+              >
+                <span>Kirim Berita</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
 

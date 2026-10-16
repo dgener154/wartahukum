@@ -92,7 +92,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="flex items-center gap-1.5 bg-gradient-to-r from-red-600 to-indigo-600 hover:from-red-500 hover:to-indigo-500 text-white font-semibold px-3 py-1 rounded-full shadow-sm text-[11px] transition-all"
             >
               <Shield className="w-3.5 h-3.5 text-amber-300" />
-              <span>{currentUser.role === 'ADMIN' ? 'Panel Admin' : 'Dashboard Guru'}</span>
+              <span>{currentUser.role === 'ADMIN' ? 'Panel Admin' : 'Panel Redaksi'}</span>
             </button>
           ) : (
             <button

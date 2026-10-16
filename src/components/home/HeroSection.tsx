@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Article } from '../../types';
 import { ImageWithFallback } from '../common/ImageWithFallback';
+import { VoicePlayer } from '../common/VoicePlayer';
 
 interface HeroSectionProps {
   articles: Article[];
@@ -121,8 +122,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {currentArticle.summary}
           </p>
 
-          {/* Action Button: Baca Selengkapnya */}
-          <div className="flex items-center gap-4">
+          {/* Action Button: Baca Selengkapnya & Voice Play */}
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => onSelectArticle(currentArticle)}
               className="flex items-center gap-2 px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold bg-gradient-to-r from-red-600 to-indigo-600 hover:from-red-500 hover:to-indigo-500 text-white shadow-lg transition-all hover:scale-102 active:scale-98"
@@ -130,6 +131,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <span>Baca Selengkapnya</span>
               <ArrowRight className="w-4 h-4" />
             </button>
+            <VoicePlayer
+              title={currentArticle.title}
+              textToRead={`${currentArticle.summary || ''}. ${currentArticle.content || ''}`}
+              variant="compact"
+            />
           </div>
         </div>
 
