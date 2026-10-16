@@ -1,19 +1,76 @@
 import React from 'react';
+import { usePortal } from '../../context/PortalContext';
 
 interface WartaHukumLogoProps {
   variant?: 'masthead' | 'header' | 'compact' | 'footer';
   className?: string;
   showTagline?: boolean;
+  customLogoUrl?: string;
 }
 
 export const WartaHukumLogo: React.FC<WartaHukumLogoProps> = ({
   variant = 'header',
   className = '',
   showTagline = true,
+  customLogoUrl,
 }) => {
+  let settingsLogoUrl: string | undefined = customLogoUrl;
+  let mediaName = 'WARTA HUKUM';
+  let mediaTagline = 'Tranparansi Publikasi Tajam dan Akurat';
+
+  try {
+    const portal = usePortal();
+    if (portal?.settings) {
+      if (!settingsLogoUrl && portal.settings.logoUrl) {
+        settingsLogoUrl = portal.settings.logoUrl;
+      }
+      if (portal.settings.name) mediaName = portal.settings.name;
+      if (portal.settings.tagline) mediaTagline = portal.settings.tagline;
+    }
+  } catch {
+    // Fallback if rendered outside PortalProvider
+  }
+
   const isFooter = variant === 'footer';
   const isCompact = variant === 'compact';
   const isMasthead = variant === 'masthead';
+
+  // If a custom logo image was uploaded, render the uploaded image as the logo / app name
+  if (settingsLogoUrl) {
+    const imgHeightClass = isCompact
+      ? 'h-8 sm:h-9 max-w-[190px]'
+      : isMasthead
+      ? 'h-16 sm:h-20 max-w-[420px]'
+      : 'h-10 sm:h-12 max-w-[280px]';
+
+    return (
+      <div
+        className={`inline-flex flex-col select-none ${
+          isFooter ? 'text-white' : 'text-slate-900'
+        } ${className}`}
+      >
+        <div className="flex items-center">
+          <img
+            src={settingsLogoUrl}
+            alt={mediaName}
+            className={`w-auto object-contain transition-all duration-300 ${imgHeightClass} ${
+              isFooter ? 'brightness-110 drop-shadow-[0_2px_4px_rgba(255,255,255,0.15)]' : ''
+            }`}
+          />
+        </div>
+        {showTagline && mediaTagline && isMasthead && (
+          <span
+            className={`font-serif italic text-xs sm:text-sm mt-1.5 ${
+              isFooter ? 'text-amber-300' : 'text-red-600'
+            }`}
+            style={{ fontFamily: "'Dancing Script', cursive" }}
+          >
+            {mediaTagline}
+          </span>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div

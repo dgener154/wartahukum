@@ -48,6 +48,7 @@ export const RedaksiDashboard: React.FC<RedaksiDashboardProps> = ({
     updateArticle,
     addAgenda,
     login,
+    settings,
   } = usePortal();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'my-articles' | 'write' | 'my-agendas' | 'profile'>('overview');
@@ -182,13 +183,21 @@ export const RedaksiDashboard: React.FC<RedaksiDashboardProps> = ({
       {/* Top Header */}
       <header className="bg-slate-900 text-white border-b border-slate-800 px-4 sm:px-6 py-3 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
-            WH
-          </div>
+          {settings.logoUrl ? (
+            <img
+              src={settings.logoUrl}
+              alt={settings.name}
+              className="h-8 max-w-[140px] object-contain rounded bg-white/10 px-1 py-0.5"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-xs">
+              WH
+            </div>
+          )}
           <div>
             <div className="flex items-center gap-2">
               <span className="font-serif font-bold text-sm tracking-wide">
-                WARTA HUKUM — Portal Wartawan & Redaksi
+                {settings.name} — Portal Wartawan & Redaksi
               </span>
               <span className="text-[10px] bg-blue-500/30 text-blue-300 border border-blue-500/40 px-2 py-0.5 rounded uppercase font-bold">
                 REDAKSI / WARTAWAN

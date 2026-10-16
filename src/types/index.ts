@@ -151,6 +151,7 @@ export interface StaticPage {
 export interface MediaSettings {
   name: string;
   tagline: string;
+  logoUrl?: string;
   legalEntityName: string;
   companyRegistrationNote: string;
   editorInChief: string;
