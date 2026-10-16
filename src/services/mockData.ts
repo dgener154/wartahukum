@@ -68,7 +68,7 @@ export const INITIAL_CATEGORIES: ArticleCategory[] = [
 
 export const INITIAL_SETTINGS: MediaSettings = {
   name: 'WARTA HUKUM',
-  tagline: 'Aktual Beritanya, Akurat Faktanya, Berimbang Pemberitaannya',
+  tagline: 'Tranparansi Publikasi Tajam dan Akurat',
   legalEntityName: 'PT WARTA MEDIA HUKUM NUSANTARA',
   companyRegistrationNote: 'Badan hukum pers berbadan hukum resmi Republik Indonesia. Pengelolaan dokumen legal diverifikasi berkala oleh Manajemen Redaksi.',
   editorInChief: 'Dr. Hendra Gunawan, S.H., M.H.',
@@ -87,7 +87,7 @@ export const INITIAL_SETTINGS: MediaSettings = {
   copyright: '© 2026 WARTA HUKUM. Seluruh Hak Cipta Dilindungi Undang-Undang.',
   rainbowIntensity: 'medium',
   enableTicker: true,
-  tickerCustomText: '🔴 BREAKING NEWS • WARTA HUKUM — Aktual Beritanya, Akurat Faktanya, Berimbang Pemberitaannya. Mengawal Kebenaran, Menyuarakan Keadilan, Menyajikan Informasi untuk Indonesia.',
+  tickerCustomText: '🔴 BREAKING NEWS • WARTA HUKUM — Surat Kabar Umum News: Tranparansi Publikasi Tajam dan Akurat. Mengawal Kebenaran, Menyuarakan Keadilan, Menyajikan Informasi untuk Indonesia.',
   homeArticlesLimit: 9,
   seoDefaultTitle: 'WARTA HUKUM — Portal Berita Digital Hukum, Kriminal, dan Peradilan Indonesia',
   seoDefaultDescription: 'Portal berita online terdepan menyajikan kabar hukum terverifikasi, peradilan, korupsi, kepolisian, kejaksaan, opini pakar hukum, dan dinamika daerah.',

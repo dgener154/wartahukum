@@ -10,6 +10,7 @@ import {
   Scale,
 } from 'lucide-react';
 import { usePortal } from '../../context/PortalContext';
+import { WartaHukumLogo } from '../common/WartaHukumLogo';
 
 interface MainHeaderProps {
   onSelectCategory: (categoryId: string) => void;
@@ -46,30 +47,12 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Brand & Actions Row */}
         <div className="py-3 flex items-center justify-between gap-4">
-          {/* Logo & Brand matching screenshot */}
+          {/* Logo & Brand matching uploaded newspaper masthead */}
           <div
             onClick={onNavigateHome}
-            className="cursor-pointer flex items-center gap-3 transition-transform active:scale-98 select-none"
+            className="cursor-pointer transition-transform active:scale-98 select-none py-1"
           >
-            {/* Dark Squarish Emblem with golden scales and orange dot */}
-            <div className="relative w-11 h-11 rounded-xl bg-[#0f172a] text-amber-400 flex items-center justify-center shadow-md ring-1 ring-slate-800">
-              <Scale className="w-6 h-6 text-amber-400" />
-              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#f97316] ring-2 ring-white" />
-            </div>
-
-            <div className="flex flex-col">
-              <div className="flex items-baseline gap-1.5 leading-none">
-                <span className="font-serif font-black text-2xl tracking-tight text-slate-900">
-                  WARTA
-                </span>
-                <span className="font-serif font-black text-2xl tracking-tight bg-gradient-to-r from-red-600 via-rose-600 to-purple-600 bg-clip-text text-transparent">
-                  HUKUM
-                </span>
-              </div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mt-1">
-                PORTAL BERITA HUKUM & KRIMINAL NASIONAL
-              </span>
-            </div>
+            <WartaHukumLogo variant="header" />
           </div>
 
           {/* Center/Right Action Controls matching screenshot */}

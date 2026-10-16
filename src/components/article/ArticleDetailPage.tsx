@@ -19,6 +19,7 @@ import {
   ArrowRight,
   Newspaper,
   Send,
+  Layers,
 } from 'lucide-react';
 import { Article } from '../../types';
 import { ImageWithFallback } from '../common/ImageWithFallback';
@@ -132,10 +133,14 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({
     .filter((a) => a.id !== article.id && a.categoryId === article.categoryId && a.status === 'published')
     .slice(0, 3);
 
-  // Latest news for sidebar
+  // Latest news for sidebar (tampilkan hanya 2 card saja sesuai instruksi pengguna)
   const latestSidebar = articles
     .filter((a) => a.id !== article.id && a.status === 'published')
-    .slice(0, 4);
+    .slice(0, 2);
+
+  // All published news for 'Semua Berita' card
+  const allNewsSidebar = articles
+    .filter((a) => a.id !== article.id && a.status === 'published');
 
   const handleAddComment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -445,17 +450,22 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({
 
         {/* Sidebar (4 cols) */}
         <aside className="lg:col-span-4 space-y-6">
-          {/* Latest Flash Sidebar */}
+          {/* 1. Berita Terbaru (tampilkan hanya 2 card saja sesuai instruksi pengguna) */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
             <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-              <h3 className="font-serif font-bold text-sm text-slate-900">
-                Berita Terbaru Terkini
-              </h3>
-              <span className="w-2 h-2 rounded-full bg-red-600" />
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
+                <h3 className="font-serif font-bold text-sm text-slate-900">
+                  Berita Terbaru
+                </h3>
+              </div>
+              <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded font-semibold">
+                2 Terkini
+              </span>
             </div>
 
             <div className="space-y-4 divide-y divide-slate-100">
-              {latestSidebar.map((item) => (
+              {latestSidebar.slice(0, 2).map((item) => (
                 <div
                   key={item.id}
                   onClick={() => onSelectArticle(item)}
@@ -482,154 +492,159 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({
             </div>
           </div>
 
-          {/* CARD 1: KOMENTAR TERBARU (Ikut obrolan pembaca) */}
+          {/* 2. CARD: SEMUA BERITA (Mengubah card gambar terlampir menjadi Semua Berita sesuai instruksi) */}
           <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-4">
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
               <div>
-                <span className="text-[11px] font-bold tracking-wider text-[#1b8055] uppercase block">
-                  KOMENTAR TERBARU
+                <span className="text-[11px] font-bold tracking-wider text-red-600 uppercase block">
+                  INDEKS & ARSIP REDAKSI
                 </span>
-                <h3 className="font-bold text-base sm:text-lg text-slate-900 mt-1">
-                  Ikut obrolan pembaca
+                <h3 className="font-bold text-base sm:text-lg text-slate-900 mt-0.5 flex items-center gap-2">
+                  <span>Semua Berita</span>
+                  <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                    {allNewsSidebar.length}
+                  </span>
                 </h3>
               </div>
-              <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-                <MessageSquare className="w-5 h-5 stroke-[2.2]" />
-              </div>
-            </div>
-
-            {/* Daftar Komentar */}
-            <div className="space-y-2.5">
-              {comments.map((c) => (
-                <div
-                  key={c.id}
-                  className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-1 transition-colors hover:bg-slate-100/70"
-                >
-                  <h4 className="font-bold text-xs sm:text-sm text-slate-900 leading-none">
-                    {c.name}
-                  </h4>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-1">
-                    {c.content}
-                  </p>
-                  <p className="text-[11px] text-slate-400 font-sans mt-0.5">
-                    {c.timeAgo}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {/* Form Tulis Komentar atau Tombol */}
-            {showCommentForm ? (
-              <form onSubmit={handleAddComment} className="pt-2 border-t border-slate-100 space-y-2.5 animate-in fade-in">
-                {commentSuccess && (
-                  <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-1.5">
-                    <Check className="w-4 h-4 text-emerald-600" />
-                    <span>Komentar Anda berhasil dikirim!</span>
-                  </div>
-                )}
-                <input
-                  type="text"
-                  placeholder="Nama Anda"
-                  value={newCommentAuthor}
-                  onChange={(e) => setNewCommentAuthor(e.target.value)}
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
-                  required
-                />
-                <textarea
-                  rows={2}
-                  placeholder="Tulis tanggapan atau komentar Anda..."
-                  value={newCommentText}
-                  onChange={(e) => setNewCommentText(e.target.value)}
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white resize-none"
-                  required
-                />
-                <div className="flex items-center gap-2">
-                  <button
-                    type="submit"
-                    className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>Kirim Komentar</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowCommentForm(false)}
-                    className="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold"
-                  >
-                    Batal
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowCommentForm(true)}
-                className="w-full py-2.5 px-4 rounded-xl border border-emerald-300/80 bg-emerald-50/60 hover:bg-emerald-100/70 text-emerald-800 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all active:scale-[0.99] shadow-xs"
-              >
-                <span>Tulis komentar</span>
-                <ArrowDown className="w-4 h-4 text-emerald-700" />
-              </button>
-            )}
-          </div>
-
-          {/* CARD 2: RINGKASAN */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-3.5">
-            <span className="text-[11px] font-bold tracking-wider text-[#1b8055] uppercase block">
-              RINGKASAN
-            </span>
-
-            <div className="space-y-3 text-xs sm:text-sm">
-              <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
-                <span className="text-slate-500">Tanggal</span>
-                <span className="font-bold text-slate-900">
-                  {formatDateSummary(article.publishedAt)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
-                <span className="text-slate-500">Kategori</span>
-                <span className="font-bold text-slate-900 text-right">
-                  {article.categoryName || 'Pendidikan Madrasah'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500">Durasi baca</span>
-                <span className="font-bold text-slate-900">
-                  {calculateReadingTime()}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* CARD 3: PUBLIKASI */}
-          <div className="rounded-2xl overflow-hidden shadow-xs border border-slate-200/90">
-            {/* Top header dark box */}
-            <div className="bg-[#040915] text-white p-5 flex items-center justify-between gap-3">
-              <div>
-                <span className="text-[11px] font-bold tracking-wider text-emerald-400 uppercase block">
-                  PUBLIKASI
-                </span>
-                <h3 className="font-bold text-base sm:text-lg text-white mt-1 leading-snug max-w-[210px]">
-                  Kirim bahan berita kegiatan Anda
-                </h3>
-              </div>
-              <div className="w-11 h-11 rounded-xl bg-emerald-400 text-slate-950 flex items-center justify-center shrink-0 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0 border border-red-100">
                 <Newspaper className="w-5 h-5 stroke-[2.2]" />
               </div>
             </div>
 
-            {/* Bottom white box */}
-            <div className="bg-white p-5 space-y-4">
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Pegawai dan unit kerja dapat mengirim bahan kegiatan untuk diproses menjadi publikasi resmi Tim Humas.
-              </p>
-              <button
-                type="button"
-                onClick={onKirimBerita || onBack}
-                className="w-full py-3 px-4 rounded-xl bg-[#006644] hover:bg-[#005237] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors active:scale-[0.99]"
-              >
-                <span>Kirim Berita</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+            {/* Daftar Semua Berita */}
+            <div className="space-y-3.5 divide-y divide-slate-100">
+              {allNewsSidebar.slice(0, 5).map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => onSelectArticle(item)}
+                  className="pt-3 first:pt-0 group cursor-pointer flex gap-3 items-start"
+                >
+                  <div className="w-16 h-13 rounded-lg overflow-hidden shrink-0 bg-slate-100">
+                    <ImageWithFallback
+                      src={item.coverImage}
+                      alt={item.title}
+                      fallbackCategory={item.categoryName}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mb-0.5">
+                      <span className="font-semibold text-red-600 uppercase">
+                        {item.categoryName}
+                      </span>
+                      <span>·</span>
+                      <span className="truncate">{formatDate(item.publishedAt || item.createdAt)}</span>
+                    </div>
+                    <h4 className="font-serif font-bold text-xs text-slate-900 group-hover:text-red-600 transition-colors line-clamp-2 leading-snug">
+                      {item.title}
+                    </h4>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Tombol Lihat Semua Berita di Beranda */}
+            <button
+              type="button"
+              onClick={onBack}
+              className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors active:scale-[0.99]"
+            >
+              <Layers className="w-4 h-4 text-red-400" />
+              <span>Lihat Semua Berita di Beranda</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* 3. Ringkasan & Komentar Pembaca (Compact Utility) */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 text-xs">
+              <span className="font-bold text-slate-700">Ringkasan Info Berita</span>
+              <span className="text-slate-400 font-mono text-[11px]">{calculateReadingTime()} baca</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-[11px]">
+              <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                <span className="text-slate-400 block text-[10px]">Kategori</span>
+                <span className="font-bold text-slate-800 truncate block">{article.categoryName}</span>
+              </div>
+              <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                <span className="text-slate-400 block text-[10px]">Tanggal Terbit</span>
+                <span className="font-bold text-slate-800 truncate block">{formatDateSummary(article.publishedAt)}</span>
+              </div>
+            </div>
+
+            {/* Form & List Komentar Pembaca */}
+            <div className="pt-2 border-t border-slate-100 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Komentar Pembaca ({comments.length})</span>
+                </span>
+                {!showCommentForm && (
+                  <button
+                    type="button"
+                    onClick={() => setShowCommentForm(true)}
+                    className="text-[11px] font-bold text-emerald-700 hover:underline flex items-center gap-0.5"
+                  >
+                    <span>+ Tulis</span>
+                  </button>
+                )}
+              </div>
+
+              {showCommentForm ? (
+                <form onSubmit={handleAddComment} className="space-y-2 pt-1 animate-in fade-in">
+                  {commentSuccess && (
+                    <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Komentar berhasil dikirim!</span>
+                    </div>
+                  )}
+                  <input
+                    type="text"
+                    placeholder="Nama Anda"
+                    value={newCommentAuthor}
+                    onChange={(e) => setNewCommentAuthor(e.target.value)}
+                    className="w-full text-xs px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                    required
+                  />
+                  <textarea
+                    rows={2}
+                    placeholder="Tulis komentar..."
+                    value={newCommentText}
+                    onChange={(e) => setNewCommentText(e.target.value)}
+                    className="w-full text-xs px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white resize-none"
+                    required
+                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="submit"
+                      className="flex-1 py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5"
+                    >
+                      <Send className="w-3 h-3" />
+                      <span>Kirim</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowCommentForm(false)}
+                      className="py-1.5 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                  {comments.slice(0, 2).map((c) => (
+                    <div key={c.id} className="p-2 rounded-lg bg-slate-50 border border-slate-100 text-xs space-y-0.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-800 text-[11px]">{c.name}</span>
+                        <span className="text-[10px] text-slate-400">{c.timeAgo}</span>
+                      </div>
+                      <p className="text-slate-600 text-[11px] line-clamp-2">{c.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

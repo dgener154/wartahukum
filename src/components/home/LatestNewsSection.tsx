@@ -23,7 +23,7 @@ export const LatestNewsSection: React.FC<LatestNewsSectionProps> = ({
     );
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
+  const itemsPerPage = 2; // Tampilkan hanya 2 card saja sesuai permintaan pengguna
   const totalPages = Math.ceil(publishedArticles.length / itemsPerPage);
 
   const paginatedArticles = publishedArticles.slice(
@@ -56,7 +56,7 @@ export const LatestNewsSection: React.FC<LatestNewsSectionProps> = ({
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-6 rounded-xs bg-red-600" />
               <h2 className="text-xl sm:text-2xl font-serif font-bold text-slate-900 tracking-tight">
-                Berita Terbaru & Terkini
+                Berita Terbaru
               </h2>
             </div>
 
